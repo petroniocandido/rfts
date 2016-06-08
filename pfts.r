@@ -64,7 +64,7 @@ PFTS <- function(fsets,flrgs){
             
         lw <- c()
         for(i in 1:length(k$rhs)) lw[i] <- nc$fuzzySets[[ k$rhs[i] ]]$lower;
-        return (min(lw));
+        return (mean(lw));
     }
         
     nc$getUpper <- function(nflrg){
@@ -77,7 +77,7 @@ PFTS <- function(fsets,flrgs){
             
         lw <- c()
         for(i in 1:length(k$rhs)) lw[i] <- nc$fuzzySets[[ k$rhs[i] ]]$upper;
-        return (max(lw));
+        return (mean(lw));
     }
     
     nc$forecast <- function(x){
@@ -103,13 +103,21 @@ PFTS <- function(fsets,flrgs){
         
         forecasts[1,] <- nc$forecast(x)
         for(i in 2:n){
-            inc <- (forecasts[i-1,2] - forecasts[i-1,1])/9
-            c <- 1
-            for(k in seq(forecasts[i-1,1], forecasts[i-1,2], inc)){
-                forecasts[i,] <- forecasts[i,] + nc$forecast(k)
-                c <- c + 1
-            }
-            forecasts[i,] = forecasts[i,] / (c-1)
+			lower <- nc$forecast(forecasts[i-1,1])
+			upper <- nc$forecast(forecasts[i-1,2])
+			forecasts[i,1] <- lower[1,1]
+			forecasts[i,2] <- upper[1,2]
+            #inc <- (forecasts[i-1,2] - forecasts[i-1,1])/10
+            #c <- 1
+            #for(k in seq(forecasts[i-1,1], forecasts[i-1,2], inc)){
+				#tmp <- nc$forecast(k)
+                #forecasts[i,1] <- forecasts[i,1] + tmp[1,1]
+                #forecasts[i,1] <- min(forecasts[i,1],tmp[1,1])
+                #forecasts[i,2] <- forecasts[i,2] + tmp[1,2]
+                #forecasts[i,2] <- max(forecasts[i,2],tmp[1,2])
+                #c <- c + 1
+            #}
+            #forecasts[i,] = forecasts[i,] / (c-1)
         }
         return (forecasts)
     }

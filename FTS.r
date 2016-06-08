@@ -1,9 +1,8 @@
-source("./common.r")
-source("./partitioner.r")
-source("./ftscommon.r")
-source("./song.r")
-source("./chen.r")
-source("./benchmarks.r")
+path <- "/home/petronio/dados/Dropbox/Doutorado/Disciplinas/AdvancedFuzzyTimeSeriesModels/rfts/"
+files <- c("common.r","partitioner.r","ftscommon.r","song.r","chen.r","benchmarks.r","pfts.r")
 
+for (i in files) {
+	source(paste(path,i,sep=""))
+}
         
 
