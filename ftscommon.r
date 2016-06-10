@@ -36,6 +36,15 @@ genFLR <- function(fuzzyData){
     return (flrs);
 }
 
+genRecurrentFLR <- function(fuzzyData){
+    flrs <- list();
+    for(i in 2:length(fuzzyData)){
+        tmp <- FLR(fuzzyData[i-1],fuzzyData[i]);
+        flrs[[i-1]] <- tmp;
+    }
+    return (flrs);
+}
+
 forecastAhead <- function(fts, x,n){
         forecasts <- rep(0,n)
         forecasts[1] <- fts$forecast(x)
