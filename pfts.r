@@ -120,7 +120,7 @@ PFTS <- function(fsets,flrgs){
     nc$forecast <- function(x){
 		l <- length(x)
 
-		ret <- matrix(rep(0,l*2), l,2)
+		ret <- matrix(rep(NA,(1+l)*2), 1+l,2)
 
 		for(k in 1:l) {
 			mv <- c(); 
@@ -132,7 +132,7 @@ PFTS <- function(fsets,flrgs){
 				lw[i] <- mv[i] * nc$getLower( fs$name );
 				up[i] <- mv[i] * nc$getUpper( fs$name );
 			}
-			ret[k,] <- c( sum(lw), sum(up) )
+			ret[k+1,] <- c( sum(lw), sum(up) )
 		}
         return ( ret )
     }
@@ -233,7 +233,7 @@ PWFTS <- function(fsets,flrgs){
     nc$forecast <- function(x){
 		l <- length(x)
 
-		ret <- matrix(rep(0,l*2), l,2)
+		ret <- matrix(rep(NA,(1+l)*2), 1+l,2)
 
 		for(k in 1:l) {
 			mv <- c(); 
@@ -245,7 +245,7 @@ PWFTS <- function(fsets,flrgs){
 				lw[i] <- mv[i] * nc$getLower( fs$name );
 				up[i] <- mv[i] * nc$getUpper( fs$name );
 			}
-			ret[k,] <- c( sum(lw), sum(up) )
+			ret[k+1,] <- c( sum(lw), sum(up) )
 		}
         return ( ret )
     }
