@@ -118,20 +118,23 @@ PFTS <- function(fsets,flrgs){
     }
     
     nc$forecast <- function(x){
-        mv <- c(); 
-        lw <- c();
-        up <- c();
-        #print(x)
-        for(i in 1:nc$npart) { 
-            fs <- nc$fuzzySets[[i]];
-            mv[i] <- fs$membership(x);
-            #print(fs$membership)
-            lw[i] <- mv[i] * nc$getLower( fs$name );
-            up[i] <- mv[i] * nc$getUpper( fs$name );
-        }
-        
-        return ( matrix(c( sum(lw), sum(up) ), 1,2) )
-        
+		l <- length(x)
+
+		ret <- matrix(rep(0,l*2), l,2)
+
+		for(k in 1:l) {
+			mv <- c(); 
+			lw <- c();
+			up <- c();
+			for(i in 1:nc$npart) { 
+				fs <- nc$fuzzySets[[i]];
+				mv[i] <- fs$membership(x[k]);
+				lw[i] <- mv[i] * nc$getLower( fs$name );
+				up[i] <- mv[i] * nc$getUpper( fs$name );
+			}
+			ret[k,] <- c( sum(lw), sum(up) )
+		}
+        return ( ret )
     }
         
     nc$forecastAhead <- function(x,n){
@@ -228,22 +231,25 @@ PWFTS <- function(fsets,flrgs){
     }
     
     nc$forecast <- function(x){
-        mv <- c(); 
-        lw <- c();
-        up <- c();
-        #print(x)
-        for(i in 1:nc$npart) { 
-            fs <- nc$fuzzySets[[i]];
-            mv[i] <- fs$membership(x);
-            #print(fs$membership)
-            lw[i] <- mv[i] * nc$getLower( fs$name );
-            up[i] <- mv[i] * nc$getUpper( fs$name );
-        }
-        
-        return ( matrix(c( sum(lw), sum(up) ), 1,2) )
-        
+		l <- length(x)
+
+		ret <- matrix(rep(0,l*2), l,2)
+
+		for(k in 1:l) {
+			mv <- c(); 
+			lw <- c();
+			up <- c();
+			for(i in 1:nc$npart) { 
+				fs <- nc$fuzzySets[[i]];
+				mv[i] <- fs$membership(x[k]);
+				lw[i] <- mv[i] * nc$getLower( fs$name );
+				up[i] <- mv[i] * nc$getUpper( fs$name );
+			}
+			ret[k,] <- c( sum(lw), sum(up) )
+		}
+        return ( ret )
     }
-        
+    
     
     return (nc)
 }

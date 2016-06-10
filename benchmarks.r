@@ -16,6 +16,24 @@ benchmark <- function(builder,pdata,np,mf,parameters,crossvalidation_ratio){
                  validationIndex = round(size*crossvalidation_ratio)))
 }
 
+benchmarkInterval <- function(builder,pdata,np,mf,parameters,crossvalidation_ratio){
+    size <- length(pdata)
+    train <- pdata[1:round(size*crossvalidation_ratio)]
+    test <- pdata[round(size*crossvalidation_ratio):size]
+
+    tmp <- builder(train,np,mf,parameters)
+    
+    model <- tmp$train()
+    
+    tryCatch(pred <- sapply(test, model$forecast), error= function(e){ print(e); print(sprintf(model$dump())) })
+    
+    return (list(model = model, 
+                 validation = c(test,NA), predicted = c(NA,pred), 
+                 mape = MAPE(c(test,NA),c(NA,pred)),
+                 rmse = RMSE(c(test,NA),c(NA,pred)),
+                 validationIndex = round(size*crossvalidation_ratio)))
+}
+
 #
 # Train a model in many partitions sizes, checking the error mesures
 #
@@ -111,3 +129,5 @@ benchmarkAll <- function(data,indexfield,valuefield,nps,crossvalidation_ratio){
     plot(rmse ~ mdl, data=tmp, main="RMSE",type="l",lwd=5,ylab="",xlab="")
     plot(mape ~ mdl, data=tmp, main="MAPE",type="h",lwd=5,ylab="",xlab="")
 }
+
+
