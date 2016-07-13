@@ -122,7 +122,7 @@ FitYuFTS <- function(pdata,np,mf,parameters) {
     
     nc$train <- function() {
        fzydata <- fuzzySeries(nc$data,nc$fuzzySets);
-       flrs <- genFLR(fzydata);
+       flrs <- genRecurrentFLR(fzydata);
        flrgs <- nc$genFLRG(flrs);
        tmp <- YuFTS(nc$fuzzySets, flrgs);
        return (tmp);

@@ -19,9 +19,27 @@ EWFLRG <- function(plhs, prhs, pc){
     
     nc$getWeight <- function(x){
 		tot <- nc$getTotalWeight()
-		#print(tot)
 		return ((nc$c**(x-1))/tot)
     }
+    
+    nc$getWeights = function(){
+		
+		 w <- c();
+        
+        if(length(nc$rhs) == 0)
+            return (matrix(c(1)))
+                            
+        for(i in 1:length(nc$rhs)) w[i] <- as.numeric(nc$c**(i-1));
+        
+        tot <- sum(w)
+        
+        w <- w / tot
+        
+        print(w)
+        
+        return (matrix(w))
+		
+	}
 	
     nc$dump <- function() {
         prhs <- nc$rhs
@@ -78,7 +96,7 @@ SadaeiFTS <- function(fsets,flrgs,pc){
 		for(k in 1:l) {
 			mv <- c();
         
-			for(i in 1:nc$npart) mv[i] <- nc$fuzzySets[[i]]$membership(x);
+			for(i in 1:nc$npart) mv[i] <- nc$fuzzySets[[i]]$membership(x[k]);
 			
 			best_sets <- which(mv == max(mv));
 			
@@ -90,7 +108,7 @@ SadaeiFTS <- function(fsets,flrgs,pc){
 			if(lhs %in% names(nc$flrg)){
 				wg <- nc$flrg[[lhs]]$getWeights()
 			}
-
+			
 			ret[k] <- (t(wg) %*% mp)
 		}
         return ( ret )
