@@ -1,43 +1,43 @@
-WFLRG <- function(plhs, prhs){
+IWFLRG <- function(plhs, prhs, ptotal){
     nc <- list(
         lhs = plhs,
-        rhs = prhs
+        rhs = prhs,
+        total = ptotal
     );
     
     nc$put = function(x){
-       return (WFLRG(nc$lhs, c(nc$rhs,x)));       
+       if(x %in% names(nc$rhs)){
+		   nc$rhs[[x]] <- nc$rhs[[x]] + 1
+	   } else {
+		   nc$rhs[[x]] <- 1
+	   }
+	   nc$total <- nc$total + 1
+       return (IWFLRG(nc$lhs, nc$rhs, nc$total));       
     }
     
-    nc$getWeight <- function(x){
-        return (x/(sum(seq(1,length(nc$rhs)))))
-    }
-    
-    nc$getWeights <- function(){
-        w <- c();
-        
-        if(length(nc$rhs) == 0)
-            return (matrix(c(1)))
-        
-        len <- sum(seq(1,length(nc$rhs)));
-        for(i in 1:length(nc$rhs)) w[i] <- i/len;
-        return (matrix(w))            
-    }
-            
+    nc$getWeight = function(x){
+		if(is.null(nc$rhs[[x]])){
+			return (0)
+		} else {
+			return(nc$rhs[[x]]/nc$total)
+		}
+	}
+	
     nc$dump <- function() {
-        prhs <- sort(nc$rhs)
-        tmp <- paste(nc$lhs, sprintf("%s * %s",round(nc$getWeight(1),2),prhs[1]), sep=" -> ");
+        prhs <- nc$rhs
+        tmp <- paste(sprintf("\n"), paste(nc$lhs, sprintf("%s*%s",nc$getWeight(names(nc$rhs)[1]),names(nc$rhs)[1]), sep=" -> "));
         if(length(prhs) > 1) 
-            for(i in 2:length(prhs)) 
-                tmp <- paste(tmp,sprintf("%s * %s",round(nc$getWeight(i),2),prhs[i]),sep=", ")
+            for(i in 2:length(nc$rhs)) 
+                tmp <- paste(tmp,sprintf("%s*%s",nc$getWeight(names(nc$rhs)[i]),names(nc$rhs)[i]),sep=", ")
         return (tmp)
     }
             
     return (nc);
 }
 
-YuFTS <- function(fsets,flrgs){
+EfendiFTS <- function(fsets,flrgs){
     nc <- list(
-        name = "Yu",
+        name = "Ismail & Efendi",
         fuzzySets = fsets,
         flrg = flrgs,
         npart = length(fsets)
@@ -47,7 +47,7 @@ YuFTS <- function(fsets,flrgs){
         tmp <- ""
         for(fs in nc$fuzzySets){
             k <- nc$flrg[[ fs$name ]]
-            if(is.null(k)) k <- WFLRG(fs$name, c(fs$name))
+            if(is.null(k)) k <- IWFLRG(fs$name, c(fs$name))
             tmp <- sprintf("%s \n %s",tmp,k$dump());
         }
         return (tmp)
@@ -91,7 +91,7 @@ YuFTS <- function(fsets,flrgs){
     return (nc)
 }
 
-FitYuFTS <- function(pdata,np,mf,parameters) {
+FitEfendiFTS <- function(pdata,np,mf,parameters) {
     nc <- list(
         data = pdata,
         npart = np,
@@ -104,7 +104,7 @@ FitYuFTS <- function(pdata,np,mf,parameters) {
         for(flr in flrs){
             #print(flr$dump())
             if(is.null(flrgs[[flr$lhs]])){
-                flrgs[[flr$lhs]] <- WFLRG(flr$lhs,c(flr$rhs));
+                flrgs[[flr$lhs]] <- IWFLRG(flr$lhs,c(flr$rhs));
             } else {
                 flrgs[[flr$lhs]] <- flrgs[[flr$lhs]]$put(flr$rhs);
             }
@@ -116,7 +116,7 @@ FitYuFTS <- function(pdata,np,mf,parameters) {
        fzydata <- fuzzySeries(nc$data,nc$fuzzySets);
        flrs <- genFLR(fzydata);
        flrgs <- nc$genFLRG(flrs);
-       tmp <- YuFTS(nc$fuzzySets, flrgs);
+       tmp <- EfendiFTS(nc$fuzzySets, flrgs);
        return (tmp);
     }
     

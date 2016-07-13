@@ -1,66 +1,6 @@
-PFLRG <- function(plhs, prhs){
+IFTS <- function(fsets,flrgs){
     nc <- list(
-        lhs = plhs,
-        rhs = prhs
-    );
-    
-    nc$put = function(x){
-       ind = which(nc$rhs == x)
-       return (PFLRG(nc$lhs, c(nc$rhs,x)));       
-    }
-    
-    nc$dump <- function() {
-        prhs <- sort(nc$rhs)
-        tmp <- paste(nc$lhs, prhs[1], sep=" -> ");
-        if(length(prhs) > 1) 
-            for(i in 2:length(prhs)) 
-                tmp <- paste(tmp,prhs[i],sep=", ")
-        return (tmp)
-    }
-            
-    return (nc);
-}
-
-PWFLRG <- function(plhs, prhs, ptotal){
-    nc <- list(
-        lhs = plhs,
-        rhs = prhs,
-        total = ptotal
-    );
-    
-    nc$put = function(x){
-       if(x %in% names(nc$rhs)){
-		   nc$rhs[[x]] <- nc$rhs[[x]] + 1
-	   } else {
-		   nc$rhs[[x]] <- 1
-	   }
-	   nc$total <- nc$total + 1
-       return (PWFLRG(nc$lhs, nc$rhs, nc$total));       
-    }
-    
-    nc$getWeight = function(x){
-		if(is.null(nc$rhs[[x]])){
-			return (0)
-		} else {
-			return(nc$rhs[[x]]/nc$total)
-		}
-	}
-	
-    nc$dump <- function() {
-        prhs <- nc$rhs
-        tmp <- paste(sprintf("\n"), paste(nc$lhs, sprintf("%s*%s",nc$getWeight(names(nc$rhs)[1]),names(nc$rhs)[1]), sep=" -> "));
-        if(length(prhs) > 1) 
-            for(i in 2:length(nc$rhs)) 
-                tmp <- paste(tmp,sprintf("%s*%s",nc$getWeight(names(nc$rhs)[i]),names(nc$rhs)[i]),sep=", ")
-        return (tmp)
-    }
-            
-    return (nc);
-}
-
-PFTS <- function(fsets,flrgs){
-    nc <- list(
-        name = "Probabilistic FTS",
+        name = "Interval FTS",
         fuzzySets = fsets,
         flrg = flrgs,
         npart = length(fsets)
@@ -70,7 +10,7 @@ PFTS <- function(fsets,flrgs){
         tmp <- ""
         for(fs in nc$fuzzySets){
             k <- nc$flrg[[ fs$name ]]
-            if(is.null(k)) k <- PFLRG(fs$name, c(fs$name))
+            if(is.null(k)) k <- FLRG(fs$name, c(fs$name))
             tmp <- sprintf("%s \n %s",tmp,k$dump());
         }
         return (tmp)
@@ -165,9 +105,9 @@ PFTS <- function(fsets,flrgs){
     return (nc)
 }
 
-PWFTS <- function(fsets,flrgs){
+IWFTS <- function(fsets,flrgs){
     nc <- list(
-        name = "Probabilistic Weighted FTS",
+        name = "Weighted Interval FTS",
         fuzzySets = fsets,
         flrg = flrgs,
         npart = length(fsets)
@@ -180,7 +120,7 @@ PWFTS <- function(fsets,flrgs){
             if(is.null(k)) {
 				 tmp <- list()
 				 tmp[[fs$name]] <- 1
-				 k <- PWFLRG(fs$name, tmp, 1)
+				 k <- IWFLRG(fs$name, tmp, 1)
 			}
             tmp <- sprintf("%s \n %s",tmp,k$dump());
         }
@@ -255,7 +195,7 @@ PWFTS <- function(fsets,flrgs){
 }
 
 
-FitPFTS <- function(pdata,np,mf,parameters) {
+FitIFTS <- function(pdata,np,mf,parameters) {
     nc <- list(
         data = pdata,
         npart = np,
@@ -267,7 +207,7 @@ FitPFTS <- function(pdata,np,mf,parameters) {
         flrgs <- list()
         for(flr in flrs){
             if(is.null(flrgs[[flr$lhs]])){
-                flrgs[[flr$lhs]] <- PFLRG(flr$lhs,c(flr$rhs));
+                flrgs[[flr$lhs]] <- FLRG(flr$lhs,c(flr$rhs));
             } else {
                 flrgs[[flr$lhs]] <- flrgs[[flr$lhs]]$put(flr$rhs);
             }
@@ -279,7 +219,7 @@ FitPFTS <- function(pdata,np,mf,parameters) {
        fzydata <- fuzzySeries(nc$data,nc$fuzzySets);
        flrs <- genFLR(fzydata);
        flrgs <- nc$genFLRG(flrs);
-       tmp <- PFTS(nc$fuzzySets, flrgs);
+       tmp <- IFTS(nc$fuzzySets, flrgs);
        return (tmp);
     }
     
@@ -287,7 +227,7 @@ FitPFTS <- function(pdata,np,mf,parameters) {
 }
 
 
-FitPWFTS <- function(pdata,np,mf,parameters) {
+FitIWFTS <- function(pdata,np,mf,parameters) {
     nc <- list(
         data = pdata,
         npart = np,
@@ -301,7 +241,7 @@ FitPWFTS <- function(pdata,np,mf,parameters) {
             if(is.null(flrgs[[flr$lhs]])){
 				tmp <- list()
 				tmp[[flr$rhs]] = 1
-                flrgs[[flr$lhs]] <- PWFLRG(flr$lhs,tmp,1);
+                flrgs[[flr$lhs]] <- IWFLRG(flr$lhs,tmp,1);
             } else {
                 flrgs[[flr$lhs]] <- flrgs[[flr$lhs]]$put(flr$rhs);
             }
@@ -313,7 +253,7 @@ FitPWFTS <- function(pdata,np,mf,parameters) {
        fzydata <- fuzzySeries(nc$data,nc$fuzzySets);
        flrs <- genRecurrentFLR(fzydata);
        flrgs <- nc$genFLRG(flrs);
-       tmp <- PWFTS(nc$fuzzySets, flrgs);
+       tmp <- IWFTS(nc$fuzzySets, flrgs);
        return (tmp);
     }
     

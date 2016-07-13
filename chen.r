@@ -1,5 +1,5 @@
 
-ChenFLRG <- function(plhs, prhs){
+FLRG <- function(plhs, prhs){
     nc <- list(
         lhs = plhs,
         rhs = prhs
@@ -7,7 +7,7 @@ ChenFLRG <- function(plhs, prhs){
     
     nc$put = function(x){
         if(!(x %in% nc$rhs)){
-            return (ChenFLRG(nc$lhs, c(nc$rhs,x)));            
+            return (FLRG(nc$lhs, c(nc$rhs,x)));            
         } else { 
             return (nc);
         }
@@ -35,7 +35,7 @@ ChenFTS <- function(fsets,flrgs){
         tmp <- ""
         for(fs in nc$fuzzySets){
             k <- nc$flrg[[ fs$name ]]
-            if(is.null(k)) k <- ChenFLRG(fs$name, c(fs$name))
+            if(is.null(k)) k <- FLRG(fs$name, c(fs$name))
             tmp <- sprintf("%s \n %s",tmp,k$dump());
         }
         return (tmp)
@@ -80,7 +80,7 @@ FitChenFTS <- function(pdata,np,mf,parameters) {
         flrgs <- list()
         for(flr in flrs){
             if(is.null(flrgs[[flr$lhs]])){
-                flrgs[[flr$lhs]] <- ChenFLRG(flr$lhs,c(flr$rhs));
+                flrgs[[flr$lhs]] <- FLRG(flr$lhs,c(flr$rhs));
             } else {
                 flrgs[[flr$lhs]] <- flrgs[[flr$lhs]]$put(flr$rhs);
             }
