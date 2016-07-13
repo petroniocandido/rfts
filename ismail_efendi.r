@@ -6,7 +6,7 @@ IWFLRG <- function(plhs, prhs, ptotal){
     );
     
     nc$put = function(x){
-       if(x %in% names(nc$rhs)){
+		if(x %in% names(nc$rhs)){
 		   nc$rhs[[x]] <- nc$rhs[[x]] + 1
 	   } else {
 		   nc$rhs[[x]] <- 1
@@ -25,10 +25,10 @@ IWFLRG <- function(plhs, prhs, ptotal){
 	
     nc$dump <- function() {
         prhs <- nc$rhs
-        tmp <- paste(sprintf("\n"), paste(nc$lhs, sprintf("%s*%s",nc$getWeight(names(nc$rhs)[1]),names(nc$rhs)[1]), sep=" -> "));
+        tmp <- paste(sprintf("\n"), paste(nc$lhs, sprintf("%s*%s",round(nc$getWeight(names(nc$rhs)[1]),2),names(nc$rhs)[1]), sep=" -> "));
         if(length(prhs) > 1) 
             for(i in 2:length(nc$rhs)) 
-                tmp <- paste(tmp,sprintf("%s*%s",nc$getWeight(names(nc$rhs)[i]),names(nc$rhs)[i]),sep=", ")
+                tmp <- paste(tmp,sprintf("%s*%s",round(nc$getWeight(names(nc$rhs)[i]),2),names(nc$rhs)[i]),sep=", ")
         return (tmp)
     }
             
@@ -43,11 +43,15 @@ EfendiFTS <- function(fsets,flrgs){
         npart = length(fsets)
     );
     
-    nc$dump <- function() {
+     nc$dump <- function() {
         tmp <- ""
         for(fs in nc$fuzzySets){
             k <- nc$flrg[[ fs$name ]]
-            if(is.null(k)) k <- IWFLRG(fs$name, c(fs$name))
+            if(is.null(k)) {
+				 tmp <- list()
+				 tmp[[fs$name]] <- 1
+				 k <- IWFLRG(fs$name, tmp, 1)
+			}
             tmp <- sprintf("%s \n %s",tmp,k$dump());
         }
         return (tmp)
@@ -99,12 +103,13 @@ FitEfendiFTS <- function(pdata,np,mf,parameters) {
         fuzzySets = UniversePartitioner(pdata,np,mf,"A")
     );
     
-    nc$genFLRG <- function(flrs){
+     nc$genFLRG <- function(flrs){
         flrgs <- list()
         for(flr in flrs){
-            #print(flr$dump())
             if(is.null(flrgs[[flr$lhs]])){
-                flrgs[[flr$lhs]] <- IWFLRG(flr$lhs,c(flr$rhs));
+				tmp <- list()
+				tmp[[flr$rhs]] = 1
+                flrgs[[flr$lhs]] <- IWFLRG(flr$lhs,tmp,1);
             } else {
                 flrgs[[flr$lhs]] <- flrgs[[flr$lhs]]$put(flr$rhs);
             }
@@ -114,7 +119,7 @@ FitEfendiFTS <- function(pdata,np,mf,parameters) {
     
     nc$train <- function() {
        fzydata <- fuzzySeries(nc$data,nc$fuzzySets);
-       flrs <- genFLR(fzydata);
+       flrs <- genRecurrentFLR(fzydata);
        flrgs <- nc$genFLRG(flrs);
        tmp <- EfendiFTS(nc$fuzzySets, flrgs);
        return (tmp);

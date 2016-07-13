@@ -2,7 +2,7 @@ EWFLRG <- function(plhs, prhs, pc){
     nc <- list(
         lhs = plhs,
         rhs = prhs,
-        c = pc
+        c = as.numeric(pc)
     );
     
     nc$put = function(x){
@@ -10,24 +10,25 @@ EWFLRG <- function(plhs, prhs, pc){
     }
     
     nc$getTotalWeight <- function(){
-		tot <- 0
-		for(i in 0:length(nc$rhs)-1){
-			tot <- tot + nc$c**i
+		tot <- 0.0
+		for(i in 1:length(nc$rhs)){
+			tot <- tot + as.numeric(nc$c**(i-1))
 		}
-        return (tot)
+		return (tot)
     }
     
     nc$getWeight <- function(x){
 		tot <- nc$getTotalWeight()
-        return ((x-1)/tot)
+		#print(tot)
+		return ((nc$c**(x-1))/tot)
     }
 	
     nc$dump <- function() {
         prhs <- nc$rhs
-        tmp <- paste(sprintf("\n"), paste(nc$lhs, sprintf("%s*%s",nc$getWeight(1),names(nc$rhs)[1]), sep=" -> "));
+        tmp <- paste(sprintf("\n"), paste(nc$lhs, sprintf("%s*%s",round(nc$getWeight(1),2),nc$rhs[1]), sep=" -> "));
         if(length(prhs) > 1) 
             for(i in 2:length(nc$rhs)) 
-                tmp <- paste(tmp,sprintf("%s*%s",nc$getWeight(i),names(nc$rhs)[i]),sep=", ")
+                tmp <- paste(tmp,sprintf("%s*%s",round(nc$getWeight(i),2),nc$rhs[i]),sep=", ")
         return (tmp)
     }
             
@@ -91,13 +92,13 @@ SadaeiFTS <- function(fsets,flrgs,pc){
     return (nc)
 }
 
-FitSadaeiFTS <- function(pdata,np,mf,parameters,pc) {
+FitSadaeiFTS <- function(pdata,np,mf,parameters) {
     nc <- list(
         data = pdata,
         npart = np,
         membershipFunc = mf,
         fuzzySets = UniversePartitioner(pdata,np,mf,"A"),
-        c = pc
+        c = parameters
     );
     
     nc$genFLRG <- function(flrs){
