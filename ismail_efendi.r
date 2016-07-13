@@ -23,6 +23,18 @@ IWFLRG <- function(plhs, prhs, ptotal){
 		}
 	}
 	
+	nc$getWeights = function(){
+		
+		 w <- c();
+        
+        if(length(nc$rhs) == 0)
+            return (matrix(c(1)))
+        
+        for(i in 1:length(nc$rhs)) w[i] <- nc$rhs[[i]]/nc$total;
+        return (matrix(w))
+		
+	}
+	
     nc$dump <- function() {
         prhs <- nc$rhs
         tmp <- paste(sprintf("\n"), paste(nc$lhs, sprintf("%s*%s",round(nc$getWeight(names(nc$rhs)[1]),2),names(nc$rhs)[1]), sep=" -> "));
@@ -68,28 +80,38 @@ EfendiFTS <- function(fsets,flrgs){
         if(length(k$rhs) == 0)
             return (matrix(c(nc$fuzzySets[[ nflrg ]]$midpoint)))
         
-        for(i in 1:length(k$rhs)) mp[i] <- nc$fuzzySets[[ k$rhs[i] ]]$midpoint;
+        for(i in 1:length(k$rhs)) {
+			mp[i] <- nc$fuzzySets[[ names(k$rhs)[i] ]]$midpoint;
+		}
         return (matrix(mp));
     }
     
     nc$forecast <- function(x){
-        mv <- c();
-        
-        for(i in 1:nc$npart) mv[i] <- nc$fuzzySets[[i]]$membership(x);
-        
-        best_sets <- which(mv == max(mv));
-        
-        lhs <- nc$fuzzySets[[ best_sets[1] ]]$name
-        
-        mp <- nc$getMidpoints( lhs )
-        
-        wg <- matrix(c(1))
-        if(lhs %in% names(nc$flrg)){
-            wg <- nc$flrg[[lhs]]$getWeights()
-        }
+		
+		l <- length(x)
 
-        return (t(wg) %*% mp)
+		ret <- c()
+
+		for(k in 1:l) {
+			mv <- c();
         
+			for(i in 1:nc$npart) mv[i] <- nc$fuzzySets[[i]]$membership(x[k]);
+			
+			best_sets <- which(mv == max(mv));
+			
+			lhs <- nc$fuzzySets[[ best_sets[1] ]]$name
+			
+			mp <- nc$getMidpoints( lhs )
+			
+			wg <- matrix(c(1))
+			if(lhs %in% names(nc$flrg)){
+				
+				wg <- nc$flrg[[lhs]]$getWeights()
+			}
+			
+			ret[k] <- (t(wg) %*% mp)
+		}
+        return ( ret )
     }
     
     return (nc)

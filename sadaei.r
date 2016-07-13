@@ -70,23 +70,31 @@ SadaeiFTS <- function(fsets,flrgs,pc){
     }
     
     nc$forecast <- function(x){
-        mv <- c();
-        
-        for(i in 1:nc$npart) mv[i] <- nc$fuzzySets[[i]]$membership(x);
-        
-        best_sets <- which(mv == max(mv));
-        
-        lhs <- nc$fuzzySets[[ best_sets[1] ]]$name
-        
-        mp <- nc$getMidpoints( lhs )
-        
-        wg <- matrix(c(1))
-        if(lhs %in% names(nc$flrg)){
-            wg <- nc$flrg[[lhs]]$getWeights()
-        }
+		
+		l <- length(x)
 
-        return (t(wg) %*% mp)
+		ret <- c()
+
+		for(k in 1:l) {
+			mv <- c();
         
+			for(i in 1:nc$npart) mv[i] <- nc$fuzzySets[[i]]$membership(x);
+			
+			best_sets <- which(mv == max(mv));
+			
+			lhs <- nc$fuzzySets[[ best_sets[1] ]]$name
+			
+			mp <- nc$getMidpoints( lhs )
+			
+			wg <- matrix(c(1))
+			if(lhs %in% names(nc$flrg)){
+				wg <- nc$flrg[[lhs]]$getWeights()
+			}
+
+			ret[k] <- (t(wg) %*% mp)
+		}
+        return ( ret )
+		
     }
     
     return (nc)

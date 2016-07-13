@@ -53,14 +53,23 @@ ChenFTS <- function(fsets,flrgs){
     }
     
     nc$forecast <- function(x){
-        mv <- c();
-        for(i in 1:nc$npart) mv[i] <- nc$fuzzySets[[i]]$membership(x);
+		l <- length(x)
+
+		ret <- c()
+
+		for(k in 1:l) {
+			mv <- c();
+			for(i in 1:nc$npart) mv[i] <- nc$fuzzySets[[i]]$membership(x[k]);
+			
+			best_sets <- which(mv == max(mv));
+			
+			mp <- nc$getMidpoints( nc$fuzzySets[[ best_sets[1] ]]$name )
+			
+			ret[k] <- (sum(mp)/length(mp))
+			
+		}
+        return ( ret )       
         
-        best_sets <- which(mv == max(mv));
-        
-        mp <- nc$getMidpoints( nc$fuzzySets[[ best_sets[1] ]]$name )
-        
-        return (sum(mp)/length(mp))
     }
     
     return (nc)
