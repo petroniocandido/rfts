@@ -35,7 +35,7 @@ EWFLRG <- function(plhs, prhs, pc){
         
         w <- w / tot
         
-        print(w)
+        #print(w)
         
         return (matrix(w))
 		
@@ -142,7 +142,7 @@ FitSadaeiFTS <- function(pdata,np,mf,parameters) {
     
     nc$train <- function() {
        fzydata <- fuzzySeries(nc$data,nc$fuzzySets);
-       flrs <- genFLR(fzydata);
+       flrs <- genRecurrentFLR(fzydata);
        flrgs <- nc$genFLRG(flrs);
        tmp <- SadaeiFTS(nc$fuzzySets, flrgs,nc$c);
        return (tmp);

@@ -67,7 +67,7 @@ ChenFTS <- function(fsets,flrgs){
 			
 			ret[k] <- (sum(mp)/length(mp))
 			
-		}
+		}	
         return ( ret )       
         
     }

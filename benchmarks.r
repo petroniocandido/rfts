@@ -6,7 +6,7 @@ RMSE <- function(targets,predictions){
 # Root Mean Squared Error - With probabilistic inputs
 RMSEProb <- function(targets,predictions){
 	preds <- rep(NA,nrow(predictions))
-	for(i in 2:nrow(predictions)) preds <- mean(predictions[i,])
+	for(i in 2:nrow(predictions)) preds[i] <- mean(predictions[i,])
     return (sqrt(mean((preds-targets)**2, na.rm=TRUE)))
 }
 
@@ -17,8 +17,39 @@ MAPE <- function(targets,predictions){
 
 MAPEProb <- function(targets,predictions){
 	preds <- rep(NA,nrow(predictions))
-	for(i in 2:nrow(predictions)) preds <- mean(predictions[i,])
+	for(i in 2:nrow(predictions)) preds[i] <- mean(predictions[i,])
     return (mean(abs(preds-targets)/preds, na.rm=TRUE))
+}
+
+PinballLossFunction <- function(target, prediction, quantile){
+	#print(target)
+	#print(prediction)
+	if(target >= prediction) {
+		return ((target - prediction)*quantile)
+	} else {
+		return ((prediction - target)*(1 - quantile))
+	}
+}
+
+
+PinballLoss <- function(targets, predictions, quantile){
+	ret <- c()
+	for(i in 1:length(targets)){
+		if(!is.na(predictions[i])){
+			ret[i] <- PinballLossFunction(targets[i],predictions[i],quantile)
+		}
+	}
+	return (ret)
+}
+
+PercentualPinballLoss <- function(targets, predictions, quantile){
+	ret <- c()
+	for(i in 1:length(targets)){
+		if(!is.na(predictions[i])){
+			ret[i] <- round(PinballLossFunction(targets[i],predictions[i],quantile)/targets[i],3)
+		}
+	}
+	return (ret)
 }
 
 benchmark <- function(builder,pdata,np,mf,parameters,crossvalidation_ratio){
@@ -271,4 +302,26 @@ benchmarkAll_Simple <- function(data,indexfield,valuefield,nps,crossvalidation_r
     
 }
 
+executaTeste <- function(builder, partitions, parameters, trainData, testData, testDates, index, color, ty, wd){
+    fts <- builder(trainData,partitions,trimf,parameters)$train();
+    pred_fts <- fts$forecast(testData)
+    print(sprintf("%s & %s  & %s \\ \\hline",fts$name, RMSE(testData,pred_fts), MAPE(testData,pred_fts)))
+    lines(testDates,pred_fts[index],col=color,lty=ty,lwd=wd)
+}
 
+executaTesteInterval <- function(builder, partitions, parameters, trainData, testData, testDates, index, color, ty, wd){
+    fts <- builder(trainData,partitions,trimf,parameters)$train();
+    l <- length(testData)
+    pred_fts <- matrix(rep(0,l*2),l,2)
+    pred_fts <- fts$forecast(testData)
+    #print(sprintf("%s & %s & %s \\ \\hline",fts$name, RMSEProb(testData,pred_fts[index,]), MAPEProb(testData,pred_fts[index,])))
+    print(sprintf("%s & %s & %s & %s & %s & %s",
+		mean( PercentualPinballLoss(testData,pred_fts[index,1],0.95)),
+		mean( PercentualPinballLoss(testData,pred_fts[index,1],0.75)),
+		mean( PercentualPinballLoss(testData,pred_fts[index,1],0.60)),
+		mean( PercentualPinballLoss(testData,pred_fts[index,2],0.40)),
+		mean( PercentualPinballLoss(testData,pred_fts[index,2],0.25)),
+		mean( PercentualPinballLoss(testData,pred_fts[index,2],0.05))))	
+    lines(testDates,pred_fts[index,1],col=color,lty=ty,lwd=wd)
+    lines(testDates,pred_fts[index,2],col=color,lty=ty,lwd=wd)
+}
