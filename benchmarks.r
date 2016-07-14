@@ -42,6 +42,30 @@ PinballLoss <- function(targets, predictions, quantile){
 	return (ret)
 }
 
+Sharpness <- function(predictions){
+	l <- nrow(predictions)
+	
+	tmp <- c()
+	for(i in 1:l){
+		if(!is.na(predictions[i,1])){
+			tmp[i] <- predictions[i,2] - predictions[i,1]
+			
+		}
+	}
+	return (mean(tmp, na.rm=TRUE))
+}
+
+Resolution <- function(predictions, sharpness){
+	l <- nrow(predictions)
+	tmp <- c()
+	for(i in 1:l){
+		if(!is.na(predictions[i,1])){
+			tmp[i] <- abs((predictions[i,2] - predictions[i,1]) - sharpness)
+		}
+	}
+	return (mean(tmp, na.rm=TRUE))
+}
+
 PercentualPinballLoss <- function(targets, predictions, quantile){
 	ret <- c()
 	for(i in 1:length(targets)){
@@ -322,6 +346,9 @@ executaTesteInterval <- function(builder, partitions, parameters, trainData, tes
 		mean( PercentualPinballLoss(testData,pred_fts[index,2],0.40)),
 		mean( PercentualPinballLoss(testData,pred_fts[index,2],0.25)),
 		mean( PercentualPinballLoss(testData,pred_fts[index,2],0.05))))	
+	shp <- Sharpness(pred_fts)
+	res <- Resolution(pred_fts,shp)
+	print(sprintf("%s & %s",shp,res))
     lines(testDates,pred_fts[index,1],col=color,lty=ty,lwd=wd)
     lines(testDates,pred_fts[index,2],col=color,lty=ty,lwd=wd)
 }
