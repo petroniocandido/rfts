@@ -40,8 +40,8 @@ IFTS <- function(fsets,flrgs){
             return (nc$fuzzySets[[ nflrg ]]$lower)
             
         lw <- c()
-        for(i in 1:length(k$rhs)) lw[i] <- nc$fuzzySets[[ k$rhs[i] ]]$lower;
-        return (mean(lw));
+        for(i in 1:length(k$rhs)) lw[i] <- nc$fuzzySets[[ k$rhs[i] ]]$midpoint;
+        return (min(lw));
     }
         
     nc$getUpper <- function(nflrg){
@@ -53,8 +53,8 @@ IFTS <- function(fsets,flrgs){
             return (nc$fuzzySets[[ nflrg ]]$upper)
             
         lw <- c()
-        for(i in 1:length(k$rhs)) lw[i] <- nc$fuzzySets[[ k$rhs[i] ]]$upper;
-        return (mean(lw));
+        for(i in 1:length(k$rhs)) lw[i] <- nc$fuzzySets[[ k$rhs[i] ]]$midpoint;
+        return (max(lw));
     }
     
     nc$forecast <- function(x){
