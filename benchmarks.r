@@ -66,6 +66,18 @@ Resolution <- function(predictions, sharpness){
 	return (mean(tmp, na.rm=TRUE))
 }
 
+Coverage <- function(targets,predictions) {
+	preds <- rep(NA,nrow(predictions))
+	for(i in 2:nrow(predictions)) {
+		if(targets[i] >= predictions[i,1] && targets[i] <= predictions[i,2]) {
+			preds[i] <- 1
+		} else {
+			preds[i] <- 0
+		}
+	}
+    return (mean(preds, na.rm=TRUE))
+}
+
 PercentualPinballLoss <- function(targets, predictions, quantile){
 	ret <- c()
 	for(i in 1:length(targets)){
@@ -339,16 +351,10 @@ executaTesteInterval <- function(builder, partitions, parameters, trainData, tes
     pred_fts <- matrix(rep(0,l*2),l,2)
     pred_fts <- fts$forecast(testData)
     print(sprintf("RMSE/MAPE: %s & %s \\ \\hline",RMSEProb(testData,pred_fts[index,]), MAPEProb(testData,pred_fts[index,])))
-    print(sprintf("Pinball: %s & %s & %s & %s & %s & %s",
-		mean( PercentualPinballLoss(testData,pred_fts[index,1],0.95)),
-		mean( PercentualPinballLoss(testData,pred_fts[index,1],0.75)),
-		mean( PercentualPinballLoss(testData,pred_fts[index,1],0.60)),
-		mean( PercentualPinballLoss(testData,pred_fts[index,2],0.40)),
-		mean( PercentualPinballLoss(testData,pred_fts[index,2],0.25)),
-		mean( PercentualPinballLoss(testData,pred_fts[index,2],0.05))))	
-	shp <- Sharpness(pred_fts)
+    shp <- Sharpness(pred_fts)
 	res <- Resolution(pred_fts,shp)
 	print(sprintf("Sharp/Res: %s & %s",shp,res))
+	print(sprintf("Coverage: %s", Coverage(testData, pred_fts[index,]))) 
     lines(testDates,pred_fts[index,1],col=color,lty=ty,lwd=wd)
     lines(testDates,pred_fts[index,2],col=color,lty=ty,lwd=wd)
 }
