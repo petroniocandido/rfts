@@ -8,20 +8,16 @@ D <- function(data, t){
 
 trimf <- function(x,parameters){
     if(x < parameters[1]){
-		#print("antes")
-        return (0)
+		return (0)
     }
     else if(x >= parameters[1] && x < parameters[2]){
-		#print("subindo")
-        return ((x-parameters[1])/(parameters[2]-parameters[1]))
+		return ((x-parameters[1])/(parameters[2]-parameters[1]))
     }
     else if(x >= parameters[2] && x <= parameters[3]) {
-		#print("descendo")
-        return ((parameters[3]-x)/(parameters[3]-parameters[2]))
+		return ((parameters[3]-x)/(parameters[3]-parameters[2]))
     }
     else { 
-		#print("depois")
-        return (0)
+		return (0)
     }
 }
     

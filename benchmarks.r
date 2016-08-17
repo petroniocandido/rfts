@@ -106,6 +106,24 @@ benchmark <- function(builder,pdata,np,mf,parameters,crossvalidation_ratio){
                  validationIndex = round(size*crossvalidation_ratio)))
 }
 
+benchmarkAhead <- function(builder,pdata,np,mf,parameters,crossvalidation_ratio){
+    size <- length(pdata)
+    train <- pdata[1:round(size*crossvalidation_ratio)]
+    test <- pdata[round(size*crossvalidation_ratio):size]
+
+    tmp <- builder(train,np,mf,parameters)
+    
+    model <- tmp$train()
+    
+    tryCatch(pred <- sapply(test, model$forecastAhead), error= function(e){ print(e); print(sprintf(model$dump())) })
+    
+    return (list(model = model, 
+                 validation = c(test,NA), predicted = c(NA,pred), 
+                 mape = MAPE(c(test,NA),c(NA,pred)),
+                 rmse = RMSE(c(test,NA),c(NA,pred)),
+                 validationIndex = round(size*crossvalidation_ratio)))
+}
+
 benchmarkInterval <- function(builder,pdata,np,mf,parameters,crossvalidation_ratio){
     size <- length(pdata)
     train <- pdata[1:round(size*crossvalidation_ratio)]
@@ -357,4 +375,88 @@ executaTesteInterval <- function(builder, partitions, parameters, trainData, tes
 	print(sprintf("Coverage: %s", Coverage(testData, pred_fts[index,]))) 
     lines(testDates,pred_fts[index,1],col=color,lty=ty,lwd=wd)
     lines(testDates,pred_fts[index,2],col=color,lty=ty,lwd=wd)
+}
+
+
+benchmarkAll2 <- function(data,indexfield,valuefield,nps,crossvalidation_ratio){
+    builders <- list(Song = FitSongFTS, Chen = FitChenFTS, Yu = FitYuFTS, Efendi = FitEfendiFTS, Sadaei = FitSadaeiFTS) #, PFTS=FitPFTS, PWFTS=FitPWFTS)
+    
+    intervals <- c(FALSE, FALSE, FALSE, FALSE, FALSE) #TRUE, TRUE)
+    
+    benchmarks <- list()
+    for(i in 1:length(builders)){
+		if(intervals[i]){
+			benchmarks[[i]] <- benchmarkInterval(builders[[i]], 
+				as.vector(data[,valuefield]),nps[i],trimf,NULL, crossvalidation_ratio)
+		} else {
+			benchmarks[[i]] <- benchmark(builders[[i]], 
+				as.vector(data[,valuefield]),nps[i],trimf,NULL, crossvalidation_ratio)
+		}
+	}
+    td <- length(data[,indexfield])
+    vh <- mean(data[,valuefield])
+    vi <- benchmarks[[1]]$validationIndex
+    
+    options(repr.plot.width=10, repr.plot.height=6)
+    
+    test <- benchmarks[[1]]$validation
+        
+    miny <- min(test,na.rm=TRUE)
+    maxy <- max(test,na.rm=TRUE)    
+    for(i in 1:length(builders)) {
+		if(intervals[i]){
+			miny <- min(miny, min(benchmarks[[i]]$predictedLower,na.rm=TRUE))
+			maxy <- max(maxy, max(benchmarks[[i]]$predictedUpper,na.rm=TRUE))
+		} else { 
+			miny <- min(miny, min(benchmarks[[i]]$predicted,na.rm=TRUE))
+			maxy <- max(maxy, max(benchmarks[[i]]$predicted,na.rm=TRUE))
+		}
+    }
+        
+    plot(test, type="l", col=1, 
+         main="Model performance on validation set",xlab="t",ylab="F(t)",
+         ylim=c(miny*0.9,maxy*1.1))
+    lgd <- c("Original")
+    clrs <- c(1)
+    for(i in 1:length(builders)) {
+        lgd[i+1] <- benchmarks[[i]]$model$name 
+        clrs[i+1] <- i*7
+        if(intervals[i]){
+			lines(benchmarks[[i]]$predictedLower,type="l",col=i*7)
+			lines(benchmarks[[i]]$predictedUpper,type="l",col=i*7)
+		} else {
+			lines(benchmarks[[i]]$predicted,type="l",col=i*7)
+		}
+    }
+    legend("topright",legend=lgd, fill=clrs)
+    
+    predictions <- data.frame(validation<-c(),predicted<-c(),model<-c())
+    rmse <- c()
+    mape <- c()
+    mdl <- c()
+    for(i in 1:length(builders)) {
+		if(intervals[i]){
+			tmp <- data.frame( benchmarks[[i]]$validation,
+                          benchmarks[[i]]$predictedMean,
+                          rep(benchmarks[[i]]$model$name,length(benchmarks[[i]]$predictedMean)) )
+		} else {
+			tmp <- data.frame( benchmarks[[i]]$validation,
+                          benchmarks[[i]]$predicted,
+                          rep(benchmarks[[i]]$model$name,length(benchmarks[[i]]$predicted)) )
+        }
+        names(tmp) <- c("validation","predicted","model")
+        predictions <- rbind(predictions, tmp)
+        rmse[i] <- benchmarks[[i]]$rmse
+        mape[i] <- benchmarks[[i]]$mape
+        mdl[i] <- benchmarks[[i]]$model$name
+    }
+    #boxplot(abs(validation-predicted) ~ model, data=predictions, main="Error distribution by model")
+    
+    tmp <- data.frame(mdl,rmse,mape)
+    names(tmp) <- c("Model","RMSE","MAPE")
+    
+    tmp
+        
+    #plot(rmse ~ mdl, data=tmp, main="RMSE",type="l",lwd=5,ylab="",xlab="")
+    #plot(mape ~ mdl, data=tmp, main="MAPE",type="h",lwd=5,ylab="",xlab="")
 }

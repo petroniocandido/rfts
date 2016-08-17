@@ -96,6 +96,15 @@ YuFTS <- function(fsets,flrgs){
 		
     }
     
+    nc$forecastAhead <- function(x,steps){
+		ret <- c(x)
+
+		for(k in 1:steps) {
+			ret[k+1] <- nc$forecast(ret[k])
+		}	
+        return ( ret )       
+    }
+    
     return (nc)
 }
 
