@@ -6,7 +6,7 @@ HOFLRG <- function(plhs, prhs){
     );
     
     nc$putLHS = function(x){
-        if(!(x %in% nc$lhs)){
+        if(!(x %in% nc$lhs) && !is.na(x) ){
             return (HOFLRG(c(nc$lhs,x), nc$rhs));            
         } else { 
             return (nc);
@@ -14,7 +14,7 @@ HOFLRG <- function(plhs, prhs){
     }
     
     nc$putRHS = function(x){
-        if(!(x %in% nc$rhs)){
+        if(!(x %in% nc$rhs) && !is.na(x) ){
             return (HOFLRG(nc$lhs, c(nc$rhs,x)));            
         } else { 
             return (nc);
@@ -46,7 +46,7 @@ HOFTS <- function(fsets,flrgs,l){
         tmp <- ""
         for(k in nc$flrg){
             if(is.null(k)) k <- HOFLRG(fs$name, c(fs$name))
-            tmp <- sprintf("%s \n %s",tmp,k$dump());
+            tmp <- sprintf("%s ; %s",tmp,k$dump());
         }
         return (tmp)
     }
@@ -54,36 +54,44 @@ HOFTS <- function(fsets,flrgs,l){
     nc$getMidpoints <- function(nflrg){
         k <- nc$flrg[[ nflrg ]];
         mp <- c()
-        
         if(length(k$rhs) == 0) {
-			print("inexistente")
-            return (c( nc$fuzzySets[[ nflrg ]]$midpoint))
-        }
-        
-        for(i in 1:length(k$rhs)) mp[i] <- nc$fuzzySets[[ k$rhs[i] ]]$midpoint;
-        return (mp);
+			for(i in strsplit(nflrg,", ")) {
+				mp <- c(mp, nc$fuzzySets[ i ]$midpoint);
+			}
+			return (mp);
+        } else {
+			for(i in 1:length(k$rhs)) mp[i] <- nc$fuzzySets[[ k$rhs[i] ]]$midpoint;
+			return (mp);
+		}
     }
     
     nc$forecast <- function(x){
+		
+		x <- x[ !is.na(x) ]
+		
 		l <- length(x)
 		
 		if(l < nc$lags){
-			print("Dados insuficientes!")
+			#print("Dados insuficientes!")
+			return (c(x))
 		}
 
 		ret <- c()
-
-		for(k in nc$lags:l) {
+		c <- 1
+		
+		for(k in seq(nc$lags,l)) {
 			
-			prev <- fuzzySeries( x[ (k - nc$lags):k ],  nc$fuzzySets)
+			prev <- fuzzySeries( x[ seq(k + 1 - nc$lags,k) ],  nc$fuzzySets)
 			
 			lhs <- toString(prev)
-			
+					
 			mp <- nc$getMidpoints( lhs )
-			
-			ret[k] <- (sum(mp)/length(mp))
+					
+			ret[c] <- as.numeric(sum(mp)/as.numeric(length(mp)))
+			c <- c + 1
 			
 		}	
+				
         return ( ret )       
         
     }
@@ -106,13 +114,13 @@ FitHOFTS <- function(pdata,np,mf,parameters) {
     nc$genFLRG <- function(data){
         flrgs <- list()
         l <- length(data)
-        for(k in nc$lags:l){
+        for(k in nc$lags+1:l){
 			
-			prev <- fuzzySeries( data[ (k - nc$lags):k ],  nc$fuzzySets)
+			prev <- data[ seq(k - nc$lags,k-1) ]
 			
 			lhs <- toString(prev)
 			
-            if(is.null(flrgs[[lhs]])){
+			if(is.null(flrgs[[lhs]])){
                 flrgs[[lhs]] <- HOFLRG(prev,c(data[k]));
             } else {
                 flrgs[[lhs]] <- flrgs[[lhs]]$putRHS(data[k]);

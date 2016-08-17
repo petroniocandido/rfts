@@ -468,16 +468,33 @@ explorePartitioning <- function(builder,pdata,indexField, valueField, np,mf,para
     
 		model <- tmp$train()
 		
-		tryCatch(pred <- sapply(test, model$forecast), error= function(e){ print(e); print(sprintf(model$dump())) })
-        
-        lgd[i+1] <- toString(np[i])
+		lgd[i+1] <- toString(np[i])
         clrs[i+1] <- i*7
+		
+		if(model$isHighOrder) {
+			pred <- rep(NA,model$lags)
+			
+			for(ck in seq(model$lags+1,length(test))) {
+				pred[ck] <- model$forecast(test[seq(ck - model$lags , ck - 1)])
+				
+			}
+						
+			lines(testIndex, pred,type="l",col=i*7)
         
-        lines(c(testIndex, NA), c(NA,pred),type="l",col=i*7)
+			rmse[i] <- RMSE(test,pred)
+			mape[i] <- MAPE(test,pred)
+			
+		} else {
+			tryCatch(pred <- sapply(test, model$forecast), error= function(e){ print(e); print(sprintf(model$dump())) })
+			
+			lines(c(testIndex, NA), c(NA,pred),type="l",col=i*7)
         
-        rmse[i] <- RMSE(c(test,NA),c(NA,pred))
-        mape[i] <- MAPE(c(test,NA),c(NA,pred))
-        mdl[i] <- np[i]
+			rmse[i] <- RMSE(c(test,NA),c(NA,pred))
+			mape[i] <- MAPE(c(test,NA),c(NA,pred))
+
+		}
+		
+		mdl[i] <- np[i]
 		
     }
     
