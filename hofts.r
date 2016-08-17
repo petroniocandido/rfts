@@ -37,7 +37,9 @@ HOFTS <- function(fsets,flrgs,l){
         fuzzySets = fsets,
         flrg = flrgs,
         npart = length(fsets),
-        lags = l
+        lags = l,
+        isHighOrder = TRUE,
+        isIntervallic = FALSE
     );
     
     nc$dump <- function() {
@@ -96,7 +98,9 @@ FitHOFTS <- function(pdata,np,mf,parameters) {
         npart = np,
         membershipFunc = mf,
         fuzzySets = UniversePartitioner(pdata,np,mf,"A"),
-        lags = parameters
+        lags = parameters,
+        isHighOrder = TRUE,
+        isIntervallic = FALSE
     );
     
     nc$genFLRG <- function(data){

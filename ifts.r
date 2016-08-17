@@ -3,7 +3,9 @@ IFTS <- function(fsets,flrgs){
         name = "Interval FTS",
         fuzzySets = fsets,
         flrg = flrgs,
-        npart = length(fsets)
+        npart = length(fsets),
+        isHighOrder = FALSE,
+        isIntervallic = TRUE
     );
     
     nc$dump <- function() {
@@ -110,7 +112,9 @@ IWFTS <- function(fsets,flrgs){
         name = "Weighted Interval FTS",
         fuzzySets = fsets,
         flrg = flrgs,
-        npart = length(fsets)
+        npart = length(fsets),
+        isHighOrder = FALSE,
+        isIntervallic = TRUE
     );
     
     nc$dump <- function() {
@@ -200,7 +204,9 @@ FitIFTS <- function(pdata,np,mf,parameters) {
         data = pdata,
         npart = np,
         membershipFunc = mf,
-        fuzzySets = UniversePartitioner(pdata,np,mf,"A")
+        fuzzySets = UniversePartitioner(pdata,np,mf,"A"),
+        isHighOrder = FALSE,
+        isIntervallic = TRUE
     );
     
     nc$genFLRG <- function(flrs){
@@ -232,7 +238,9 @@ FitIWFTS <- function(pdata,np,mf,parameters) {
         data = pdata,
         npart = np,
         membershipFunc = mf,
-        fuzzySets = UniversePartitioner(pdata,np,mf,"A")
+        fuzzySets = UniversePartitioner(pdata,np,mf,"A"),
+        isHighOrder = FALSE,
+        isIntervallic = TRUE
     );
     
     nc$genFLRG <- function(flrs){

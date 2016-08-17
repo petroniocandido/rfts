@@ -3,7 +3,9 @@ SongFTS <- function(fsets,opm){
         name = "Song & Chissom",
         fuzzySets = fsets,
         operationMatrix = opm,
-        npart = length(fsets)
+        npart = length(fsets),
+        isHighOrder = FALSE,
+        isIntervallic = FALSE
     );
     
     nc$forecast <- function(x) {
@@ -44,7 +46,9 @@ FitSongFTS <- function(pdata,np,mf,parameters) {
         data = pdata,
         npart = np,
         membershipFunc = mf,
-        fuzzySets = UniversePartitioner(pdata,np,mf,"A")
+        fuzzySets = UniversePartitioner(pdata,np,mf,"A"),
+        isHighOrder = FALSE,
+        isIntervallic = FALSE
     )
     
     nc$FLRmembershipMatrix <- function(pflr){

@@ -378,7 +378,7 @@ executaTesteInterval <- function(builder, partitions, parameters, trainData, tes
 }
 
 
-benchmarkAll2 <- function(data,indexfield,valuefield,nps,crossvalidation_ratio){
+benchmarkAheadAll <- function(data,indexfield,valuefield,nps,crossvalidation_ratio){
     builders <- list(Song = FitSongFTS, Chen = FitChenFTS, Yu = FitYuFTS, Efendi = FitEfendiFTS, Sadaei = FitSadaeiFTS) #, PFTS=FitPFTS, PWFTS=FitPWFTS)
     
     intervals <- c(FALSE, FALSE, FALSE, FALSE, FALSE) #TRUE, TRUE)
@@ -389,7 +389,7 @@ benchmarkAll2 <- function(data,indexfield,valuefield,nps,crossvalidation_ratio){
 			benchmarks[[i]] <- benchmarkInterval(builders[[i]], 
 				as.vector(data[,valuefield]),nps[i],trimf,NULL, crossvalidation_ratio)
 		} else {
-			benchmarks[[i]] <- benchmark(builders[[i]], 
+			benchmarks[[i]] <- benchmarkAhead(builders[[i]], 
 				as.vector(data[,valuefield]),nps[i],trimf,NULL, crossvalidation_ratio)
 		}
 	}
@@ -430,33 +430,62 @@ benchmarkAll2 <- function(data,indexfield,valuefield,nps,crossvalidation_ratio){
     }
     legend("topright",legend=lgd, fill=clrs)
     
-    predictions <- data.frame(validation<-c(),predicted<-c(),model<-c())
     rmse <- c()
     mape <- c()
     mdl <- c()
     for(i in 1:length(builders)) {
-		if(intervals[i]){
-			tmp <- data.frame( benchmarks[[i]]$validation,
-                          benchmarks[[i]]$predictedMean,
-                          rep(benchmarks[[i]]$model$name,length(benchmarks[[i]]$predictedMean)) )
-		} else {
-			tmp <- data.frame( benchmarks[[i]]$validation,
-                          benchmarks[[i]]$predicted,
-                          rep(benchmarks[[i]]$model$name,length(benchmarks[[i]]$predicted)) )
-        }
-        names(tmp) <- c("validation","predicted","model")
-        predictions <- rbind(predictions, tmp)
-        rmse[i] <- benchmarks[[i]]$rmse
+		rmse[i] <- benchmarks[[i]]$rmse
         mape[i] <- benchmarks[[i]]$mape
         mdl[i] <- benchmarks[[i]]$model$name
     }
-    #boxplot(abs(validation-predicted) ~ model, data=predictions, main="Error distribution by model")
     
     tmp <- data.frame(mdl,rmse,mape)
     names(tmp) <- c("Model","RMSE","MAPE")
     
     tmp
+}
+
+explorePartitioning <- function(builder,pdata,indexField, valueField, np,mf,parameters,crossvalidation_ratio){
+    size <- dim(pdata)[1]
+    train <- pdata[1:round(size*crossvalidation_ratio), valueField]
+    test <- pdata[round(size*crossvalidation_ratio):size, valueField]
+    testIndex <- pdata[round(size*crossvalidation_ratio):size, indexField]
+    
+    options(repr.plot.width=10, repr.plot.height=6)
+    
+    rmse <- c()
+    mape <- c()
+    mdl <- c()
+                 
+    plot(testIndex, test, type="l", col=1, 
+         main="Fitness by Number of Partitions",xlab="t",ylab="F(t)",
+         ylim=c(min(test)*0.9,max(test)*1.1))
+    lgd <- c("Original")
+    clrs <- c(1)
+    for(i in 1:length(np)) {
         
-    #plot(rmse ~ mdl, data=tmp, main="RMSE",type="l",lwd=5,ylab="",xlab="")
-    #plot(mape ~ mdl, data=tmp, main="MAPE",type="h",lwd=5,ylab="",xlab="")
+        tmp <- builder(train,np[i],mf,parameters)
+    
+		model <- tmp$train()
+		
+		tryCatch(pred <- sapply(test, model$forecast), error= function(e){ print(e); print(sprintf(model$dump())) })
+        
+        lgd[i+1] <- toString(np[i])
+        clrs[i+1] <- i*7
+        
+        lines(c(testIndex, NA), c(NA,pred),type="l",col=i*7)
+        
+        rmse[i] <- RMSE(c(test,NA),c(NA,pred))
+        mape[i] <- MAPE(c(test,NA),c(NA,pred))
+        mdl[i] <- np[i]
+		
+    }
+    
+    legend("topright",legend=lgd, fill=clrs)
+    
+    
+    tmp <- data.frame(mdl,rmse,mape)
+    names(tmp) <- c("Model","RMSE","MAPE")
+    
+    tmp
 }

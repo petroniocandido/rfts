@@ -59,7 +59,9 @@ SadaeiFTS <- function(fsets,flrgs,pc){
         fuzzySets = fsets,
         flrg = flrgs,
         npart = length(fsets),
-        c = pc
+        c = pc,
+        isHighOrder = FALSE,
+        isIntervallic = FALSE
     );
     
     nc$dump <- function() {
@@ -103,11 +105,12 @@ SadaeiFTS <- function(fsets,flrgs,pc){
 			lhs <- nc$fuzzySets[[ best_sets[1] ]]$name
 			
 			mp <- nc$getMidpoints( lhs )
-			
+						
 			wg <- matrix(c(1))
 			if(lhs %in% names(nc$flrg)){
 				wg <- nc$flrg[[lhs]]$getWeights()
 			}
+			
 			
 			ret[k] <- (t(wg) %*% mp)
 		}
@@ -133,7 +136,9 @@ FitSadaeiFTS <- function(pdata,np,mf,parameters) {
         npart = np,
         membershipFunc = mf,
         fuzzySets = UniversePartitioner(pdata,np,mf,"A"),
-        c = parameters
+        c = parameters,
+        isHighOrder = FALSE,
+        isIntervallic = FALSE
     );
     
     nc$genFLRG <- function(flrs){

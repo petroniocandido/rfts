@@ -52,7 +52,9 @@ EfendiFTS <- function(fsets,flrgs){
         name = "Ismail & Efendi",
         fuzzySets = fsets,
         flrg = flrgs,
-        npart = length(fsets)
+        npart = length(fsets),
+        isHighOrder = FALSE,
+        isIntervallic = FALSE
     );
     
      nc$dump <- function() {
@@ -131,7 +133,9 @@ FitEfendiFTS <- function(pdata,np,mf,parameters) {
         data = pdata,
         npart = np,
         membershipFunc = mf,
-        fuzzySets = UniversePartitioner(pdata,np,mf,"A")
+        fuzzySets = UniversePartitioner(pdata,np,mf,"A"),
+        isHighOrder = FALSE,
+        isIntervallic = FALSE
     );
     
      nc$genFLRG <- function(flrs){
