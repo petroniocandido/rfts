@@ -474,10 +474,16 @@ explorePartitioning <- function(builder,pdata,indexField, valueField, np,mf,para
 		if(model$isHighOrder) {
 			pred <- rep(NA,model$lags)
 			
+			#print("===========")
+			
 			for(ck in seq(model$lags+1,length(test))) {
+			#	print(seq(ck - model$lags , ck - 1))
+			#	print(test[seq(ck - model$lags , ck - 1)])
 				pred[ck] <- model$forecast(test[seq(ck - model$lags , ck - 1)])
-				
+			#	print(pred[ck])
 			}
+			
+			#print(pred)
 						
 			lines(testIndex, pred,type="l",col=i*7)
         

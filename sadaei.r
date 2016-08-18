@@ -43,7 +43,8 @@ EWFLRG <- function(plhs, prhs, pc){
 	
     nc$dump <- function() {
         prhs <- nc$rhs
-        tmp <- paste(sprintf("\n"), paste(nc$lhs, sprintf("%s*%s",round(nc$getWeight(1),2),nc$rhs[1]), sep=" -> "));
+        tmp <- paste(nc$lhs, sprintf("%s*%s",round(nc$getWeight(1),2),nc$rhs[1]), sep=" -> ");
+        
         if(length(prhs) > 1) 
             for(i in 2:length(nc$rhs)) 
                 tmp <- paste(tmp,sprintf("%s*%s",round(nc$getWeight(i),2),nc$rhs[i]),sep=", ")
@@ -69,7 +70,7 @@ SadaeiFTS <- function(fsets,flrgs,pc){
         for(fs in nc$fuzzySets){
             k <- nc$flrg[[ fs$name ]]
             if(is.null(k)) k <- EWFLRG(fs$name, c(fs$name),nc$c)
-            tmp <- sprintf("%s \n %s",tmp,k$dump());
+            tmp <- sprintf("%s ; %s",tmp,k$dump());
         }
         return (tmp)
     }

@@ -55,9 +55,10 @@ HOFTS <- function(fsets,flrgs,l){
         k <- nc$flrg[[ nflrg ]];
         mp <- c()
         if(length(k$rhs) == 0) {
-			for(i in strsplit(nflrg,", ")) {
-				mp <- c(mp, nc$fuzzySets[ i ]$midpoint);
-			}
+			tmp <- unlist(strsplit(nflrg,", "))
+			ltmp <- length(tmp)
+			mp <- c(nc$fuzzySets[[ tmp[ltmp] ]]$midpoint);
+			
 			return (mp);
         } else {
 			for(i in 1:length(k$rhs)) mp[i] <- nc$fuzzySets[[ k$rhs[i] ]]$midpoint;
@@ -68,11 +69,9 @@ HOFTS <- function(fsets,flrgs,l){
     nc$forecast <- function(x){
 		
 		x <- x[ !is.na(x) ]
-		
 		l <- length(x)
 		
 		if(l < nc$lags){
-			#print("Dados insuficientes!")
 			return (c(x))
 		}
 
@@ -80,20 +79,23 @@ HOFTS <- function(fsets,flrgs,l){
 		c <- 1
 		
 		for(k in seq(nc$lags,l)) {
-			
 			prev <- fuzzySeries( x[ seq(k + 1 - nc$lags,k) ],  nc$fuzzySets)
-			
 			lhs <- toString(prev)
-					
 			mp <- nc$getMidpoints( lhs )
-					
 			ret[c] <- as.numeric(sum(mp)/as.numeric(length(mp)))
 			c <- c + 1
-			
 		}	
 				
         return ( ret )       
         
+    }
+    
+    nc$forecastAhead <- function(x,steps){
+		ret <- x
+
+		for(k in nc$lags:steps) ret[k+1] <- nc$forecast(ret[seq(k-nc$lags,k)])
+		
+        return ( ret )       
     }
     
     return (nc)
