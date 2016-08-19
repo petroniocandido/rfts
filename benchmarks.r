@@ -507,8 +507,8 @@ explorePartitioning <- function(builder,pdata,indexField, valueField, np,mf,para
     legend("topright",legend=lgd, fill=clrs)
     
     
-    tmp <- data.frame(mdl,rmse,mape)
-    names(tmp) <- c("Model","RMSE","MAPE")
-    
+    tmp <- data.frame(rmse,mape)
+    names(tmp) <- c("RMSE","MAPE")
+    row.names(tmp) <- mdl
     tmp
 }
