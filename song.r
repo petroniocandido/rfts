@@ -4,6 +4,7 @@ SongFTS <- function(fsets,opm){
         fuzzySets = fsets,
         operationMatrix = opm,
         npart = length(fsets),
+        isSeasonal = FALSE,
         isHighOrder = FALSE,
         isIntervallic = FALSE
     );
@@ -47,6 +48,8 @@ FitSongFTS <- function(pdata,np,mf,parameters) {
         npart = np,
         membershipFunc = mf,
         fuzzySets = UniversePartitioner(pdata,np,mf,"A"),
+        name = "Conventional FTS",
+        isSeasonal = FALSE,
         isHighOrder = FALSE,
         isIntervallic = FALSE
     )

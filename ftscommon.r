@@ -53,3 +53,17 @@ forecastAhead <- function(fts, x,n){
 		}
 		return (forecasts)
  }
+ 
+ printModel <- function(fts) {
+	 lhs <- c()
+	 rhs <- c()
+	 count <- 1
+	 for(k in fts$flrg){
+		 lhs[count] <- k$lhs
+		 rhs[count] <- k$rhs
+		 count <- count + 1
+	 }
+	 ret <- data.frame(lhs,rhs)
+	 names <- c("LHS","RHS")
+	 return (ret)
+ }

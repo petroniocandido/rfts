@@ -38,6 +38,7 @@ HOFTS <- function(fsets,flrgs,l){
         flrg = flrgs,
         npart = length(fsets),
         lags = l,
+        isSeasonal = FALSE,
         isHighOrder = TRUE,
         isIntervallic = FALSE
     );
@@ -109,6 +110,8 @@ FitHOFTS <- function(pdata,np,mf,parameters) {
         membershipFunc = mf,
         fuzzySets = UniversePartitioner(pdata,np,mf,"A"),
         lags = parameters,
+        name = sprintf("%s-Order FTS",parameters),
+        isSeasonal = FALSE,
         isHighOrder = TRUE,
         isIntervallic = FALSE
     );

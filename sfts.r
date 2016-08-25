@@ -1,5 +1,6 @@
 SFLRG <- function(seaz, prhs){
     nc <- list(
+		lhs = seaz,
         season = seaz,
         rhs = prhs
     );
@@ -29,6 +30,7 @@ SeasonalFTS <- function(fsets,flrgs,pperiod){
         flrg = flrgs,
         npart = length(fsets),
         period = pperiod,
+        isSeasonal = TRUE,
         isHighOrder = FALSE,
         isIntervallic = FALSE
     );
@@ -59,6 +61,8 @@ SeasonalFTS <- function(fsets,flrgs,pperiod){
 		ret <- c()
 
 		for(k in 1:l) {
+			#print(nc$flrg[[95]])
+			#print(season[k])
 			fsets <- nc$flrg[[ season[k] ]];
 			mp <- nc$getMidpoints( fsets$rhs )
 			ret[k] <- (sum(mp)/length(mp))
@@ -72,13 +76,14 @@ SeasonalFTS <- function(fsets,flrgs,pperiod){
 		ret <- c()
 		
 		idx <- c()
-
+		
 		# Pay attention on the index correction of trailling values when mod = 0
 
-		for(k in 1:(steps + (steps %/% (nc$period + 1)) )) 
-			if(((x+k-1) %% (nc$period + 1)) > 0) 
+		for(k in 1:(steps + ((steps + 1) %/% (nc$period + 1)) )) {
+			if(((x+k-1) %% (nc$period + 1)) > 0) {
 				idx[k - ((x+k-1) %/% (nc$period + 1))] <- ((x+k-1) %% (nc$period + 1)) 
-		
+			} 
+		}
 		ret <- nc$forecast(idx)
 			
         return ( ret )       
@@ -95,7 +100,9 @@ FitSeasonalFTS <- function(pdata,np,mf,parameters) {
         npart = np,
         membershipFunc = mf,
         fuzzySets = UniversePartitioner(pdata,np,mf,"A"),
+        name = sprintf("%s Lags Seasonal FTS",parameters),
         period = parameters,
+        isSeasonal = TRUE,
         isHighOrder = FALSE,
         isIntervallic = FALSE
     );
@@ -104,7 +111,7 @@ FitSeasonalFTS <- function(pdata,np,mf,parameters) {
         flrgs <- list()
         season <- 1
         for(flr in flrs){
-            if(length(flrgs) < season){
+			if(length(flrgs) < season){
                 flrgs[[season]] <- SFLRG(season,c(flr$rhs));
             } else {
                 flrgs[[season]] <- flrgs[[season]]$put(flr$rhs);
@@ -112,12 +119,13 @@ FitSeasonalFTS <- function(pdata,np,mf,parameters) {
                         
             season <- (season + 1) %% (nc$period + 1)
             if(season == 0) season <- 1
+            
         }
         return (flrgs)
     } 
     
     nc$train <- function() {
-       fzydata <- fuzzySeries(nc$data,nc$fuzzySets);
+		fzydata <- fuzzySeries(nc$data,nc$fuzzySets);
         flrs <- genRecurrentFLR(fzydata);
         flrgs <- nc$genFLRG(flrs);
         tmp <- SeasonalFTS(nc$fuzzySets, flrgs, nc$period);

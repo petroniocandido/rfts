@@ -61,6 +61,7 @@ SadaeiFTS <- function(fsets,flrgs,pc){
         flrg = flrgs,
         npart = length(fsets),
         c = pc,
+        isSeasonal = FALSE,
         isHighOrder = FALSE,
         isIntervallic = FALSE
     );
@@ -138,6 +139,8 @@ FitSadaeiFTS <- function(pdata,np,mf,parameters) {
         membershipFunc = mf,
         fuzzySets = UniversePartitioner(pdata,np,mf,"A"),
         c = parameters,
+        name = "Exponentialy Weighted FTS",
+        isSeasonal = FALSE,
         isHighOrder = FALSE,
         isIntervallic = FALSE
     );

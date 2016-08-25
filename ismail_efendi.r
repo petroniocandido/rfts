@@ -53,6 +53,7 @@ EfendiFTS <- function(fsets,flrgs){
         fuzzySets = fsets,
         flrg = flrgs,
         npart = length(fsets),
+        isSeasonal = FALSE,
         isHighOrder = FALSE,
         isIntervallic = FALSE
     );
@@ -134,6 +135,8 @@ FitEfendiFTS <- function(pdata,np,mf,parameters) {
         npart = np,
         membershipFunc = mf,
         fuzzySets = UniversePartitioner(pdata,np,mf,"A"),
+        name = "Improve Weighted FTS",
+        isSeasonal = FALSE,
         isHighOrder = FALSE,
         isIntervallic = FALSE
     );

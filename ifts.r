@@ -4,6 +4,7 @@ IFTS <- function(fsets,flrgs){
         fuzzySets = fsets,
         flrg = flrgs,
         npart = length(fsets),
+        isSeasonal = FALSE,
         isHighOrder = FALSE,
         isIntervallic = TRUE
     );
@@ -205,6 +206,8 @@ FitIFTS <- function(pdata,np,mf,parameters) {
         npart = np,
         membershipFunc = mf,
         fuzzySets = UniversePartitioner(pdata,np,mf,"A"),
+        name = "Interval FTS",
+        isSeasonal = FALSE,
         isHighOrder = FALSE,
         isIntervallic = TRUE
     );

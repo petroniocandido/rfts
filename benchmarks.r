@@ -456,41 +456,68 @@ explorePartitioning <- function(builder,pdata,indexField, valueField, np,mf,para
     rmse <- c()
     mape <- c()
     mdl <- c()
+    
+    tmp <- builder(train,np[1],mf,parameters)
                  
     plot(testIndex, test, type="l", col=1, 
-         main="Fitness by Number of Partitions",xlab="t",ylab="F(t)",
+         main=sprintf("%s - Fitness by Number of Partitions",tmp$name),xlab="t",ylab="F(t)",
          ylim=c(min(test)*0.9,max(test)*1.1))
     lgd <- c("Original")
     clrs <- c(1)
     for(i in 1:length(np)) {
         
-        tmp <- builder(train,np[i],mf,parameters)
-    
-		model <- tmp$train()
-		
-		lgd[i+1] <- toString(np[i])
+        lgd[i+1] <- toString(np[i])
         clrs[i+1] <- i*7
+        
+        fit <- builder(train,np[i],mf,parameters)
 		
-		if(model$isHighOrder) {
-			pred <- rep(NA,model$lags)
+		if(fit$isHighOrder) {
 			
-			#print("===========")
-			
-			for(ck in seq(model$lags+1,length(test))) {
-			#	print(seq(ck - model$lags , ck - 1))
-			#	print(test[seq(ck - model$lags , ck - 1)])
-				pred[ck] <- model$forecast(test[seq(ck - model$lags , ck - 1)])
-			#	print(pred[ck])
+			if(length(train) < parameters){
+				train <- pdata[1:parameters, valueField]
+				test <- pdata[parameters:size, valueField]
+				testIndex <- pdata[parameters:size, indexField]
+				fit <- builder(train,np[i],mf,parameters)
 			}
 			
-			#print(pred)
+			model <- fit$train()
+			
+			pred <- rep(NA,model$lags)
+			
+			for(ck in seq(model$lags+1,length(test))) {
+				pred[ck] <- model$forecast(test[seq(ck - model$lags , ck - 1)])
+			}
 						
 			lines(testIndex, pred,type="l",col=i*7)
         
 			rmse[i] <- RMSE(test,pred)
 			mape[i] <- MAPE(test,pred)
 			
+		} else if(fit$isSeasonal) {
+			
+			if(length(train) <= parameters) {
+				train <- pdata[1:(parameters+1), valueField]
+				test <- pdata[(parameters+1):size, valueField]
+				testIndex <- pdata[(parameters+1):size, indexField]
+				ini <- parameters
+				fit <- builder(train,np[i],mf,parameters)
+			} else {
+				ini <- round(size*crossvalidation_ratio)
+			}
+			
+			model <- fit$train()
+			
+			pred <- model$forecastAhead(ini, size-ini)
+			
+			lines(testIndex, pred,type="l",col=i*7)
+        
+			rmse[i] <- RMSE(test,pred)
+			mape[i] <- MAPE(test,pred)
+			
 		} else {
+						
+			model <- fit$train()
+			
 			tryCatch(pred <- sapply(test, model$forecast), error= function(e){ print(e); print(sprintf(model$dump())) })
 			
 			lines(c(testIndex, NA), c(NA,pred),type="l",col=i*7)
