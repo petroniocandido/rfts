@@ -458,9 +458,11 @@ explorePartitioning <- function(builder,pdata,indexField, valueField, np,mf,para
     mdl <- c()
     
     tmp <- builder(train,np[1],mf,parameters)
-                 
+    
+    title <- sprintf("%s - Fitness by Number of Partitions",tmp$name)
+    
     plot(testIndex, test, type="l", col=1, 
-         main=sprintf("%s - Fitness by Number of Partitions",tmp$name),xlab="t",ylab="F(t)",
+         main=title,xlab="t",ylab="F(t)",
          ylim=c(min(test)*0.9,max(test)*1.1))
     lgd <- c("Original")
     clrs <- c(1)
@@ -532,6 +534,9 @@ explorePartitioning <- function(builder,pdata,indexField, valueField, np,mf,para
     }
     
     legend("topright",legend=lgd, fill=clrs)
+    
+    dev.copy(png,filename=sprintf("%s.png",title))
+	dev.off ();
     
     
     tmp <- data.frame(rmse,mape)
