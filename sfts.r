@@ -61,8 +61,6 @@ SeasonalFTS <- function(fsets,flrgs,pperiod){
 		ret <- c()
 
 		for(k in 1:l) {
-			#print(nc$flrg[[95]])
-			#print(season[k])
 			fsets <- nc$flrg[[ season[k] ]];
 			mp <- nc$getMidpoints( fsets$rhs )
 			ret[k] <- (sum(mp)/length(mp))

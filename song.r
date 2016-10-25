@@ -10,23 +10,31 @@ SongFTS <- function(fsets,opm){
     );
     
     nc$forecast <- function(x) {
-        mv <- c();
-        for(i in 1:nc$npart) mv[i] <- nc$fuzzySets[[i]]$membership(x);
-        rmin <- matrix(rep(0,nc$npart*nc$npart), nrow=nc$npart,ncol=nc$npart);
-        rmax <- c();
-        for(i in 1:nc$npart) for(j in 1:nc$npart) rmin[i,j] <- min( nc$operationMatrix[i,j], mv[j] );
-        for(i in 1:nc$npart) rmax[i] <- max( rmin[i,] );
-        
-        best_sets <- which(rmax == max(rmax) );
-        
-        if(length(best_sets) == 1){
-            return (nc$fuzzySets[[best_sets[1]]]$midpoint);
-        } else {
-            vals <- c()
-            for(i in 1:length(best_sets)) vals[i] <- nc$fuzzySets[[best_sets[i]]]$midpoint;
-                           
-            return ( sum(vals)/length(vals) )    
-        } 
+		l <- length(x)
+
+		ret <- c()
+
+		for(k in 1:l) {
+			mv <- c();
+			for(i in 1:nc$npart) mv[i] <- nc$fuzzySets[[i]]$membership(x[k]);
+			rmin <- matrix(rep(0,nc$npart*nc$npart), nrow=nc$npart,ncol=nc$npart);
+			rmax <- c();
+			for(i in 1:nc$npart) for(j in 1:nc$npart) rmin[i,j] <- min( nc$operationMatrix[i,j], mv[j] );
+			for(i in 1:nc$npart) rmax[i] <- max( rmin[i,] );
+			
+			best_sets <- which(rmax == max(rmax) );
+			
+			if(length(best_sets) == 1){
+				ret[k] <-  (nc$fuzzySets[[best_sets[1]]]$midpoint);
+			} else {
+				vals <- c()
+				for(i in 1:length(best_sets)) vals[i] <- nc$fuzzySets[[best_sets[i]]]$midpoint;
+							   
+				ret[k] <-  ( sum(vals)/length(vals) )    
+			} 
+		}
+		
+		return (ret)
     }
     
     nc$forecastAhead <- function(x,steps){
